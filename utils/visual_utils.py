@@ -30,6 +30,7 @@ def load_infer_img(img_path, img_size=None):
     img = torch.from_numpy(img.transpose(2, 0, 1))/255
     return img
 
+
 def load_infer_img_short_size_bounded(img_path, short_size=600):
     img = cv2.imread(img_path)
     h, w, _ = img.shape
@@ -45,3 +46,25 @@ def load_infer_img_short_size_bounded(img_path, short_size=600):
     img = torch.from_numpy(img.transpose(2, 0, 1))/255
     return img
 
+
+def tensor2img(tensor):
+    """ transform tensor to BGR image
+    :param tensor:
+    :return: BGR image
+    """
+    out = tensor.squeeze(0).permute(1, 2, 0) * 255
+    # RGB2BGR for cv2 saving
+    out = out.cpu().numpy().astype(np.uint8)[:, :, ::-1]
+    return out
+
+
+def img2tensor(img):
+    """ transform image to tensor
+    :param img: BGR imgae
+    :return: tensor (1, 3, h, w)
+    """
+    # bgr->rgb
+    img = img[:, :, ::-1]
+    img = torch.from_numpy(img.transpose(2, 0, 1))/255
+    img = img.unsqueeze(0)
+    return img
