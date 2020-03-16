@@ -272,13 +272,16 @@ if __name__ == '__main__':
     act_dir = 'output/actions_set_1'
     phase = 'train'
     session = 1
+
     # test FiveK
-    # dataset = FiveK(img_dir, anno_dir, vocab_dir, phase, session)
-    #
-    # for i, data in enumerate(dataset):
-    #     print('{}/{}'.format(i, len(dataset)))
-    #     input, output, req_idx, req = data
-    #     pdb.set_trace()
+    dataset = FiveK(img_dir, anno_dir, vocab_dir, phase, session)
+
+    for i, data in enumerate(dataset):
+        print('{}/{}'.format(i, len(dataset)))
+        input, output, req_idx, req = data
+        if i > 10:
+            break
+    print('successfully iterate over FiveK')
 
     # test FiveKAct
     dataset = FiveKAct(img_dir, anno_dir, act_dir, vocab_dir, phase, session)
@@ -287,4 +290,7 @@ if __name__ == '__main__':
     for i, data in enumerate(loader):
         print('{}/{}'.format(i, len(loader)))
         input, outputs, req_idx, ops, params, req = data
+        if i > 10:
+            break
+    print('successfully iterate over FiveKAct')
 

@@ -15,6 +15,10 @@ This is the Pytorch implementation for paper "Learning by Planning: Language-Gui
 - dominate
 - kornia
 
+## Prepare pyutils
+
+
+
 ## Dataset
 
 ### MIT-Adobe Five
@@ -24,6 +28,16 @@ Test the dataloader by running
 ```shell
 PYTHONPATH='.' python datasets/FiveKdataset.py
 ```
+
+
+
+## Plan Action Sequences
+
+```shell
+CUDA_VISIBLE_DEVICES=0 python preprocess/gen_greedy_seqs.py
+```
+
+
 
 
 

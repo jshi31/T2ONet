@@ -8,7 +8,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-from operators2 import BrightnessOperator, SharpnessOperator, ContrastOperator, InpaintOperator, WhiteOperator, SaturationOperator, ToneOperator, ColorOperator
+from models.operators import BrightnessOperator, SharpnessOperator, ContrastOperator, InpaintOperator, WhiteOperator, SaturationOperator, ToneOperator, ColorOperator
 
 
 class Executor(nn.Module):
