@@ -2,9 +2,9 @@ import numpy as np
 
 import torch
 
-from core.utils.FID.inception import InceptionV3
-from core.utils.FID.fid_score import get_activation, calculate_frechet_distance
-from core.utils.ssim import SSIM
+from utils.FID.inception import InceptionV3
+from utils.FID.fid_score import get_activation, calculate_frechet_distance
+from utils.ssim import SSIM
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 

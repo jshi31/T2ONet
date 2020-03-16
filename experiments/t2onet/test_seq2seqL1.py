@@ -7,13 +7,13 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-import myhtml
-from core.utils.visualize import update_web
-from core.options.seq2seqGAN_train_options import TrainOptions
-from core.datasets_.FiveKdataset import FiveK
-from core.models.actor import Actor
-from core.utils.eval import ImageEvaluator
-from core.utils.text_utils import load_vocab, txt2idx
+import utils.html as html
+from utils.visualize import update_web
+from options.seq2seqGAN_train_options import TrainOptions
+from datasets.FiveKdataset import FiveK
+from models.actor import Actor
+from utils.eval import ImageEvaluator
+from utils.text_utils import load_vocab, txt2idx
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -22,7 +22,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 def set_web(opt):
     web_dir = os.path.join(opt.run_dir, 'test', 'web')
     img_dir = os.path.join(web_dir, 'images')
-    webpage = myhtml.HTML(web_dir, 'inference result', reflesh=1)
+    webpage = html.HTML(web_dir, 'inference result', reflesh=1)
     webpage.add_header('Visualization of  result for trial {}'.format(opt.trial))
     return webpage, img_dir
 

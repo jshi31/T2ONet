@@ -40,9 +40,7 @@ class Actor(nn.Module):
         """
         super(Actor, self).__init__()
         self.opt = opt
-        req_vocab_path = os.path.join(opt.vocab_dir, '{}_vocabs_sess_{}.json'.format(opt.dataset, opt.session))
-        op_vocab_path = os.path.join(opt.vocab_dir, '{}_operator_vocabs_sess_{}.json'.format(opt.dataset, opt.session))
-        self.vocab = load_vocab(req_vocab_path, op_vocab_path)
+        self.vocab2id, self.id2vocab, self.op_vocab2id, self.id2op_vocab = load_vocab(opt.vocab_dir, opt.dataset, opt.session)
         self.vis_encoder, self.lang_encoder, self.decoder = self.init_model()
         self.variable_lengths = opt.variable_lengths
         self.null_id = opt.null_id
@@ -52,10 +50,10 @@ class Actor(nn.Module):
         self.bn1 = nn.BatchNorm1d(512)
 
 
-    def _get_net_params(self, opt, vocab):
+    def _get_net_params(self, opt, vocab2id, op_vocab2id):
         net_params = {
-            'input_vocab_size': len(vocab['command_token_to_idx']),
-            'output_vocab_size': len(vocab['operator_token_to_idx']),
+            'input_vocab_size': len(vocab2id),
+            'output_vocab_size': len(op_vocab2id),
             'hidden_size': opt.hidden_size,
             'word_vec_dim': opt.word_vec_dim,
             'n_layers': opt.n_layers,
@@ -72,7 +70,7 @@ class Actor(nn.Module):
         return net_params
 
     def init_model(self):
-        net_params = self._get_net_params(self.opt, self.vocab)
+        net_params = self._get_net_params(self.opt, self.vocab2id, self.op_vocab2id)
         lang_encoder, decoder = create_seq2seq_net(**net_params)
         vis_encoder = Vis_encoder(3, 18, 512)  # img
         return vis_encoder, lang_encoder, decoder

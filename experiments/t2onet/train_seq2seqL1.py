@@ -10,12 +10,11 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
-from utils.text_utils import load_vocab
-from utils.
+import utils.html as html
 from options.seq2seqGAN_train_options import TrainOptions
 from datasets.FiveKdataset import FiveK, FiveKAct
 from models.actor import Actor
-from .test_seq2seqL1 import test
+from experiments.t2onet.test_seq2seqL1 import test
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -138,7 +137,7 @@ def train(model, train_loader, val_loader, optimizer_fs, crtNLL, crtMSE, opt):
 def set_web():
     web_dir = os.path.join(opt.run_dir, 'val', 'web')
     img_dir = os.path.join(web_dir, 'images')
-    webpage = HTML(web_dir, 'val result', reflesh=1)
+    webpage = html.HTML(web_dir, 'val result', reflesh=1)
     webpage.add_header('Visualization of train result for trial {}'.format(opt.trial))
     return webpage, img_dir
 
