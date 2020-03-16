@@ -1,17 +1,27 @@
 import time
-import torch.nn as nn
+import sys
+import os
+import time
+import json
+
+import torch
+import torch.nn.functional as F
+from scipy.optimize import minimize
+import cv2
+import numpy as np
+
 from scipy.optimize import minimize
 
-from core.utils_.utils import *
-from operators import img2tensor, tensor2img
-from core.models_.discriminator import Discriminator
-from core.models_.disc_resnet import ResNet_wobn
-from core.models_.lang_encoder1 import RNNEncoder
-from core.models.actor import Actor
-from core.models.seq2seqGAN.seq2seqGAN import Pix2PixHDModel
-from core.options.seq2seqGAN_train_options import TrainOptions
-from core.datasets_.FiveKdataset import FiveK
-from core.executors.request_executor import Executor
+from utils.visual_utils import img2tensor, tensor2img
+from utils.text_utils import load_embedding, load_vocab
+from models.lang_encoder import RNNEncoder as Lang_encoder
+from models.actor import Actor
+from options.seq2seqGAN_train_options import TrainOptions
+from datasets.FiveKdataset import FiveK
+from executors.executor import Executor
+
+# from models.disc_resnet import ResNet_wobn
+from models.lang_encoder import RNNEncoder
 
 
 # beam search editing
@@ -66,33 +76,6 @@ def load_seq2seqgan_disc(opt):
     model.cuda()
     model = nn.DataParallel(model, device_ids=opt.gpu_ids)
     return model
-
-# def get_param_naive(img, out, txt, mask, param0, executor, op_ind, dist_type):
-#     """ standard way to estimate the parameter from img to out
-#     :param img: image before operation [tensor] (1, 3, h, w)
-#     :param out: image before operation [tensor] (1, 3, h, w)
-#     :param txt: text request
-#     :param mask: mask [tensor] (1, 3, h, w]
-#     :param param: initial parameter that out -> img
-#     :param opname: operator name that out -> img
-#     :param cfg:
-#     :return: param: predicted best parameter
-#     :return success_flag: boolean indicating whether it is successful
-#     """
-#     def func(param):
-#         param = torch.tensor([param], dtype=torch.float).to(img.device)
-#         pred_out, pred_param = executor.execute(img, op_ind, None, specified_param=param, has_noise=False)
-#         # calc dist
-#         if dist_type == 'self-disc':
-#             err = get_disc_dist(img, pred_out, txt, discriminator).item()
-#         else:
-#             err = get_dist(pred_out, out, dist_type).item()
-#         return err
-#
-#     res = minimize(func, param0, method='Nelder-Mead')
-#     param = list(res.x)
-#     success_flag = res.success
-#     return torch.tensor([param]).to(img.device), success_flag
 
 def get_param_naive(img, out, txt, mask, param0, executor, op_ind, dist_type, optimizer):
     """ standard way to estimate the parameter from img to out

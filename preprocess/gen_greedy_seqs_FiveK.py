@@ -30,13 +30,13 @@ if __name__ == '__main__':
     phases = ['train']
     for phase in phases:
         session = 1
-        set_id = 11 # set_id is the setting of the generation  # TODO change set id
+        set_id = 1 # set_id is the setting of the generation
         save_dir = 'output/actions_set_{}'.format(set_id)
         dataset = FiveK(img_dir, anno_dir, vocab_dir, phase, session)
         loader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False, num_workers=1)
         # configure for beam search
         beam_size = 1 if fix_order else 3
-        operations = [6]  # TODO change operation lists
+        operations = [0, 1, 2, 3, 5, 6]
         operation_names = ['brightness', 'contrast', 'saturation', 'color', 'inpaint', 'tone', 'sharpness', 'white']
         err = 1e-2
         dist_type = 'L1'

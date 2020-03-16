@@ -628,11 +628,10 @@ class InpaintOperator(Operator):
         self.short_name = 'inpaint_obj'
         self.num_op_param = 1
         self.setup()
-        cur_dir = os.path.dirname(os.path.realpath(__file__))
-        checkpoint = os.path.join(cur_dir, 'pyutils/edge-connect/checkpoints/places2')
+        checkpoint = 'pyutils/edgeconnect/checkpoints/places2'
         config_path = os.path.join(checkpoint, 'config.yml.example')
         if not os.path.exists(config_path):
-            copyfile(os.path.join(cur_dir, './pyutils/edge-connect/config.yml.example'), config_path)
+            copyfile('pyutils/edgeconnect/config.yml.example', config_path)
         self.config = Config(config_path)
         self.config.MODE = 2
         self.config.MODEL = 3

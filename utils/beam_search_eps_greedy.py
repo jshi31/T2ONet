@@ -1,21 +1,22 @@
 import sys
-sys.path.append('')
+import os
 import time
-import torch.nn as nn
+import json
+import random
+
+import torch
 import torch.nn.functional as F
 from scipy.optimize import minimize
-import random
-from core.utils_.utils import *
-from operators import img2tensor, tensor2img
-from core.models.self_discriminator.discriminator import Discriminator
-from core.models_.disc_resnet import ResNet_wobn
-from core.models.lang_encoder import RNNEncoder as Lang_encoder
-import core.utils_.utils as utils
-from core.models.actor import Actor
-from core.models.seq2seqGAN.seq2seqGANDisc import Pix2PixHDModel
-from core.options.seq2seqGAN_train_options import TrainOptions
-from core.datasets_.FiveKdataset import FiveK
-from core.executors.request_executor import Executor
+import cv2
+import numpy as np
+
+from utils.visual_utils import img2tensor, tensor2img
+from utils.text_utils import load_embedding
+from models.lang_encoder import RNNEncoder as Lang_encoder
+from models.actor import Actor
+from options.seq2seqGAN_train_options import TrainOptions
+from datasets.FiveKdataset import FiveK
+from executors.executor import Executor
 
 
 # beam search editing
@@ -28,7 +29,7 @@ def create_seq2seq_net(input_vocab_size, hidden_size,
                        dropout_p, word2vec_path=None, fix_embedding=False, pad_id=0):
     word2vec = None
     if word2vec_path is not None:
-        word2vec = utils.load_embedding(word2vec_path)
+        word2vec = load_embedding(word2vec_path)
 
     n_spec_token = 4
     encoder = Lang_encoder(input_vocab_size, word_vec_dim, hidden_size, n_spec_token,

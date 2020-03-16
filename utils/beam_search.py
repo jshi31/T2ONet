@@ -10,12 +10,10 @@ import cv2
 import numpy as np
 
 from utils.visual_utils import img2tensor, tensor2img
-from models.lang_encoder import RNNEncoder as Lang_encoder
 from utils.text_utils import load_embedding
+from models.lang_encoder import RNNEncoder as Lang_encoder
 from models.actor import Actor
 from options.seq2seqGAN_train_options import TrainOptions
-import datasets
-import datasets.FiveKdataset as FiveKDataset
 from datasets.FiveKdataset import FiveK
 from executors.executor import Executor
 
