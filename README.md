@@ -31,12 +31,20 @@ This is the Pytorch implementation for paper "Learning by Planning: Language-Gui
 
 ## Dataset
 
-### MIT-Adobe Five
+### MIT-Adobe FiveKReq
 
 Test the dataloader by running
 
 ```shell
 PYTHONPATH='.' python datasets/FiveKdataset.py
+```
+
+### GIER
+
+Test the data loader by running **Currently cannot run, TO BE FiXED**
+
+```shell
+PYTHONPATH='.' python datasets/GIERdataset.py
 ```
 
 
@@ -47,6 +55,10 @@ PYTHONPATH='.' python datasets/FiveKdataset.py
 PYTHONPATH='.' CUDA_VISIBLE_DEVICES=0 python preprocess/gen_greedy_seqs_FiveK.py
 ```
 
+```shell
+PYTHONPATH='.' CUDA_VISIBLE_DEVICES=0 python preprocess/gen_greedy_seqs_GIER.py
+```
+
 
 
 ## T2ONet
@@ -54,13 +66,13 @@ PYTHONPATH='.' CUDA_VISIBLE_DEVICES=0 python preprocess/gen_greedy_seqs_FiveK.py
 ### FiveK Train
 
 ```shell
-PYTHONPATH='.' CUDA_VISIBLE_DEVICES=0 python experiments/t2onet/train_seq2seqL1.py --batch_size 64 --print_every 50 --checkpoint_every 1000 --num_iter 10000 --trial 1
+CUDA_VISIBLE_DEVICES=0 python experiments/t2onet/train_seq2seqL1.py --batch_size 64 --print_every 50 --checkpoint_every 1000 --num_iter 10000 --trial 2
 ```
 
 ### FiveK Test
 
 ```shell
-CUDA_VISIBLE_DEVICES=0 python core/test_seq2seqL1.py --print_every 100 --visualize_every 100  --visualize 0 --is_train 0 --trial 1 
+PYTHONPATH='.' CUDA_VISIBLE_DEVICES=0 python experiments/t2onet/test_seq2seqL1.py --print_every 100 --visualize_every 100  --visualize 0 --is_train 0 --trial 1 
 ```
 
 ### GIER Train

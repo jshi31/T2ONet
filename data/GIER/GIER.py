@@ -1,6 +1,4 @@
 import os
-import sys
-sys.path.append('')
 import glob
 import re
 import json
@@ -18,8 +16,8 @@ import matplotlib.pyplot as plt
 import cv2
 import torch
 from pycocotools.mask import decode as mask_decode
-from core.utils.text_utils import parse_sent
-from core.utils.visual_utils import load_train_img, load_infer_img, load_infer_img_short_size_bounded
+from utils.text_utils import parse_sent
+from utils.visual_utils import load_train_img, load_infer_img, load_infer_img_short_size_bounded
 
 
 """
@@ -276,9 +274,9 @@ class GIER(object):
 
     def load_vocab(self, vocab_dir):
         """load vocabulary from files under vocab_dir"""
-        with open(os.path.join(vocab_dir, 'IER_vocabs_sess_{}.json'.format(self.session))) as f:
+        with open(os.path.join(vocab_dir, 'GIER_vocabs_sess_{}.json'.format(self.session))) as f:
             vocab = json.load(f)
-        with open(os.path.join(vocab_dir, 'IER_operator_vocabs_sess_{}.json'.format(self.session))) as f:
+        with open(os.path.join(vocab_dir, 'GIER_operator_vocabs_sess_{}.json'.format(self.session))) as f:
             op_vocab = json.load(f)
         vocab2id = {token: i for i, token in enumerate(vocab)}
         id2vocab = {i: token for i, token in enumerate(vocab)}
@@ -422,10 +420,11 @@ if __name__ == '__main__':
     data_dir = 'data/GIER'
     vocab_dir = 'data/language'
     is_load_mask = False
-
     gier = GIER(data_dir, vocab_dir, phase, data_mode, is_load_mask, session)
     # ier.test()
     for i in range(len(gier)):
         gier.get_pair_item(i)
-        print('{}/{}'.format(i, len(gier)))
+        if i > 10:
+            break
+    print('sucessfully load GIER')
 

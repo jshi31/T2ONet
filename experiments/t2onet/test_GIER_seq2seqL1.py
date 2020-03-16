@@ -1,17 +1,19 @@
 import os
+import sys
+sys.path.append('')
 import time
 import pdb
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-import utils.html as html
-from utils.visualize import update_web
-from options.seq2seqGAN_train_options import TrainOptions
-from datasets.FiveKdataset import FiveK
-from models.actor import Actor
-from utils.eval import ImageEvaluator
-from utils.text_utils import load_vocab, txt2idx
+import myhtml
+from core.utils.visualize import update_web
+from core.options.seq2seqGAN_train_options import TrainOptions
+from core.datasets_.GIERdataset import GIERDataset as GIER
+from core.models.actor import Actor
+from core.utils.eval import ImageEvaluator
+from core.utils.text_utils import load_vocab, txt2idx
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -20,7 +22,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 def set_web(opt):
     web_dir = os.path.join(opt.run_dir, 'test', 'web')
     img_dir = os.path.join(web_dir, 'images')
-    webpage = html.HTML(web_dir, 'inference result', reflesh=1)
+    webpage = myhtml.HTML(web_dir, 'inference result', reflesh=1)
     webpage.add_header('Visualization of  result for trial {}'.format(opt.trial))
     return webpage, img_dir
 
@@ -41,17 +43,14 @@ def test(model, loader, opt, is_test=False):
     if is_test:
         Eval = ImageEvaluator()
 
-    # make model
-    if hasattr(model, 'module'):
-        single_model = model.module
-    else:
-        single_model = model
-
     for i, data in enumerate(loader):
         # for i in range(1000):
         itr += 1
         tik = time.time()
-        img_x, img_y, x, req = data
+        img_x = data['input']
+        img_y = data['output']
+        x = data['request_idx']
+        req = data['request']
         # ship to device
         x, img_x, img_y = list(map(lambda r: r.to(device), [x, img_x, img_y]))
         with torch.no_grad():
@@ -81,8 +80,6 @@ def test(model, loader, opt, is_test=False):
 
         if opt.visualize and itr % opt.visualize_every == 0:
             pred_params = torch.cat([pred_params[i][:, :1] for i in range(len(pred_params))]).unsqueeze(0)
-            pdb.set_trace()
-    if opt.visualize:
             update_web(webpage, req, None, img_x.cpu().numpy(), img_y.unsqueeze(0).cpu().numpy(), pred_imgs.cpu().numpy(), None, pred_params.cpu().numpy(), itr, pred_ops.cpu().numpy(), loader.dataset.id2op_vocab, img_dir, supervise=0)
 
     if opt.visualize:
@@ -109,7 +106,10 @@ def test_variance(model, loader, opt):
         # for i in range(1000):
         itr += 1
         tik = time.time()
-        img_x, img_y, x, req = data
+        img_x = data['input']
+        img_y = data['output']
+        x = data['request_idx']
+        req = data['request']
         # ship to device
         x, img_x, img_y = list(map(lambda r: r.to(device), [x, img_x, img_y]))
         pred_img_lst = []
@@ -148,14 +148,20 @@ if __name__ == '__main__':
     opt = TrainOptions().parse()
 
     # data loader
-    img_dir = 'data/FiveK/images'
-    anno_dir = 'data/FiveK/annotations'
-    test_dataset = FiveK(img_dir, anno_dir, opt.vocab_dir, 'test', opt.session)
-    loader = DataLoader(test_dataset, batch_size=opt.batch_size, shuffle=False, num_workers=opt.num_workers)
+    # data loader
+    phase = 'test'
+    data_mode = opt.data_mode
+    data_dir = 'data/GIER'
+    vocab_dir = 'data/language'
+    is_load_mask = False
+    dataset = GIER(data_dir, vocab_dir, 'test', opt.data_mode, is_load_mask, opt.session)
+    loader = DataLoader(dataset, collate_fn=dataset.collate, batch_size=1,
+                        shuffle=False, num_workers=1)
     # load model
     model = Actor(opt)
     ckpt_dir = os.path.join(opt.run_dir, 'seq2seqL1_model')
-    model_dir = os.path.join(ckpt_dir, 'checkpoint_best')
+    # model_dir = os.path.join(ckpt_dir, 'checkpoint_best')
+    model_dir = os.path.join(ckpt_dir, 'checkpoint_iter00009000')
     model.load_state_dict(torch.load(os.path.join(model_dir, 'model.pth')), strict=False)
     print('loaded model from {}'.format(model_dir))
     model.cuda()

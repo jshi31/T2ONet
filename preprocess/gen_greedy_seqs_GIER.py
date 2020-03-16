@@ -7,10 +7,10 @@ import pdb
 
 import cv2
 import torch
-from operators import img2tensor, tensor2img
-from core.options.rl_train_options import TrainOptions
-from core.utils_.beam_search import beam_search, get_dist
-from core.executors.request_executor import Executor
+from utils.visual_utils import tensor2img
+from options.fiveK_base_options import BaseOptions
+from utils.beam_search import beam_search, get_dist
+from executors.executor import Executor
 from data.GIER.GIER import GIER
 
 
@@ -19,21 +19,21 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 if __name__ == '__main__':
 
-    opt = TrainOptions().parse()
+    opt = BaseOptions().parser.parse_args()
 
     fix_order = False
     eps_greedy = False
 
     # requires two files: request data, operator json
-    img_dir = 'data/GIER/images'
-    mask_dir = 'data/GIER/masks'
-    feature_dir = 'data/GIER/features'
-    operator_file = 'data/GIER/GIER.json'
+    data_dir = 'data/GIER'
+    phase = 'train'
+    data_mode = 'global'
+    data_dir = 'data/GIER'
     vocab_dir = 'data/language'
-
+    is_load_mask = True
     session = 3
 
-    gier = GIER(img_dir, operator_file, mask_dir, feature_dir, vocab_dir, session, 256)
+    gier = GIER(data_dir, vocab_dir, phase, data_mode, is_load_mask, session, 256)
     set_id = 1 # set_id is the setting of the generation
     save_dir = 'output/GIER_actions_set_{}'.format(set_id)
     # configure for beam search

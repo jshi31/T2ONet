@@ -1,8 +1,6 @@
 import os
-import sys
 
-sys.path.append('')
-from core.utils.visual_utils import load_train_img
+from utils.visual_utils import load_train_img
 
 import json
 import pdb
