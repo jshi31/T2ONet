@@ -1,8 +1,10 @@
 import os
 import string
 import json
+
 import torch
 import numpy as np
+import h5py
 
 def parse_sent(desc):
     """
@@ -63,3 +65,11 @@ def txt2idx(sent, vocab2id, max_len):
     sent_idx.insert(0, 1)
     sent_idx = torch.tensor(sent_idx).unsqueeze(0)
     return sent_idx
+
+
+def load_embedding(path):
+    data = h5py.File(path, 'r')
+    glv = data['glove'][()]
+    return torch.tensor(glv)
+
+

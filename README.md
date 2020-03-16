@@ -15,9 +15,17 @@ This is the Pytorch implementation for paper "Learning by Planning: Language-Gui
 - dominate
 - kornia
 
-## Prepare pyutils
 
 
+## Installation
+
+- Clone this repo
+
+  ```shell
+  git clone https://github.com/jshi31/T2ONet.git --recursive
+  ```
+
+- Install the submodule `pyutils/edgeconnect` according to its [README](https://github.com/jshi31/edge-connect/tree/1f2658e3b190de47b86b9e25ff39227ed90d5f26).
 
 ## Dataset
 
@@ -34,7 +42,7 @@ PYTHONPATH='.' python datasets/FiveKdataset.py
 ## Plan Action Sequences
 
 ```shell
-CUDA_VISIBLE_DEVICES=0 python preprocess/gen_greedy_seqs.py
+CUDA_VISIBLE_DEVICES=0 python preprocess/gen_greedy_seqs_FiveK.py
 ```
 
 

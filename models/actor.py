@@ -10,7 +10,7 @@ from .actor_resnet import ResNet as Vis_encoder
 from .lang_encoder import RNNEncoder as Lang_encoder
 from .action_decoder import Decoder
 from ..executors.executor import Executor
-import core.utils_.utils as utils
+from utils.text_utils import load_embedding, load_vocab
 
 
 def create_seq2seq_net(input_vocab_size, output_vocab_size, hidden_size,
@@ -19,7 +19,7 @@ def create_seq2seq_net(input_vocab_size, output_vocab_size, hidden_size,
                        dropout_p, word2vec_path=None, fix_embedding=False, pad_id=0):
     word2vec = None
     if word2vec_path is not None:
-        word2vec = utils.load_embedding(word2vec_path)
+        word2vec = load_embedding(word2vec_path)
 
     n_spec_token = 4
     encoder = Lang_encoder(input_vocab_size, word_vec_dim, hidden_size, n_spec_token,
@@ -42,7 +42,7 @@ class Actor(nn.Module):
         self.opt = opt
         req_vocab_path = os.path.join(opt.vocab_dir, '{}_vocabs_sess_{}.json'.format(opt.dataset, opt.session))
         op_vocab_path = os.path.join(opt.vocab_dir, '{}_operator_vocabs_sess_{}.json'.format(opt.dataset, opt.session))
-        self.vocab = utils.load_vocab(req_vocab_path, op_vocab_path)
+        self.vocab = load_vocab(req_vocab_path, op_vocab_path)
         self.vis_encoder, self.lang_encoder, self.decoder = self.init_model()
         self.variable_lengths = opt.variable_lengths
         self.null_id = opt.null_id
@@ -214,7 +214,6 @@ class Actor(nn.Module):
         pred_op = torch.tensor([[self.start_id]] * batch_size).to(img_x.device)
 
         for i in range(0, self.opt.decoder_max_len):
-            # img_feat = self.vis_encoder(utils.pad_progress(img_x, (i + 1)/self.opt.decoder_max_len))
             img_feat = self.vis_encoder(img_x)
             img_feat = F.relu(self.bn1(img_feat))
             # decoder_output (bs, len, n_vocab)
@@ -304,7 +303,6 @@ class Actor(nn.Module):
         # block local editing operation
         op_mask = torch.tensor([False, False, True, True, True, True, True, False, True, True, False], dtype=torch.float, device=img_x.device).repeat(bs, 1) # (bs, op_len)
 
-        # img_feat = self.vis_encoder(utils.pad_progress(img_x, (i + 1)/self.opt.decoder_max_len))
         img_feat = self.vis_encoder(img_x)
         img_feat = F.relu(self.bn1(img_feat))
         # decoder_output (bs, len, n_vocab)
@@ -356,63 +354,6 @@ class Actor(nn.Module):
         _, _, _, next_context = self.decoder.forward_step(pred_op, decoder_hidden, encoder_outputs, img_feat)  # (bs, 1, n_cls)
 
         return pred_img, op_logprob, entropy_penalty, context, next_context  # outs include the gradient to the parameter
-
-    def forward_1(self, x, img_x, hidden, hist_ops, hist_params, masks):
-        """ Assume current is n th step, and only update one step
-        :param x: (bs, len_x)
-        :param img_x: (bs, n, 3, h, w)
-        :param hidden: ((n_layerrnn, bs, d), (n_layerrnn, bs, d))
-        :param masks: (bs, 1 or 3, h, w)
-        :param hist_ops: (bs, 1) # begin with <START>
-        :param hist_params: (bs, 1, len_p) #  begin with all zeros
-        :param input_lengths:
-        :return outs: (bs, 3, h, w)
-        :return op_logprob: (bs, 1)
-        :return entropy_penalty: (bs, 1)
-        :return repetitive_penalty: (bs, 1)
-        :return context: (bs, d) context of current step
-        :return next_context: (bs, d) context of next step
-        """
-        bs, step, _, _, _ = img_x.shape # step >=1
-        with torch.no_grad():
-            encoder_outputs, encoder_hidden = self.lang_encoder(x) # (n_rnnlayer, 1, hidden_size), (bs, encoder_valid_len, hidden)
-        # aggregate the history to get the decoder_hidden
-        for i in range(step):
-            ops = hist_ops[:, i].unsqueeze(-1)  # (bs, 1)
-            if i + 1 < step:
-                with torch.no_grad():  # no update vis feat
-                    img_feat = self.vis_encoder(utils.pad_progress(img_x[:, i], step/self.opt.decoder_max_len))
-            else: # update vis feat at ith step
-                img_feat = self.vis_encoder(utils.pad_progress(img_x[:, i], step/self.opt.decoder_max_len))
-            op_logprob, decoder_hidden, step_attn, context = self.decoder.forward_step(ops, decoder_hidden, encoder_outputs, img_feat)  # (bs, 1, n_cls)
-        # operator is determined, just predict the param for current state
-        ops = hist_ops[:, -1] - 3  # (bs,), -3 to convert vocab to class
-        op_logprob = op_logprob.squeeze(1)  # (bs, n_cls) the probability for the last operation
-        # get entropy penalty
-        entropy_penalty = self.get_entropy_penalty(op_logprob) # (bs, 1)
-        # get operator repetitive penalty
-        repetitive_penalty = (hist_ops[:, :-1] == (ops.unsqueeze(1) + 3)).sum(1, keepdim=True).float()  # (bs, 1)
-        # select the prob correspond to current operation
-        op_inds = ops + torch.arange(bs).to(ops.device) * (op_logprob.shape[-1])
-        op_logprob = op_logprob.take(op_inds).view(-1, 1)  # (bs, 1)
-        # divide group
-        out_gs = []
-        unqs, group_inds, rev_inds = self.divide_op_group(ops.view(-1))
-        for i in range(len(group_inds)):
-            op_ind = unqs[i].item()
-            inds = group_inds[i]
-            img_g = torch.index_select(img_x[:, -1], 0, inds) # (m, 3, h, w) g: group
-            context_g = torch.index_select(context, 0, inds) # (m, d)
-            mask_g = torch.index_select(masks, 0, inds) # (m, 1, h, w)
-            out_g, pred_param = self.executor.execute(img_g, op_ind, mask_g, context_g, has_noise=True)
-            out_gs.append(out_g)
-        out_gs = torch.cat(out_gs)
-        outs = torch.index_select(out_gs, 0, rev_inds)  # recover order
-        # pass rnn cell again to get the RNN feature
-        out_feat = self.vis_encoder(utils.pad_progress(outs, (step + 1)/self.opt.decoder_max_len))
-        _, _, _, next_context = self.decoder.forward_step(ops.unsqueeze(-1), decoder_hidden, encoder_outputs, out_feat)  # (bs, 1, n_cls)
-
-        return outs, op_logprob, entropy_penalty, repetitive_penalty, context, next_context  # outs include the gradient to the parameter
 
     def get_entropy_penalty(self, logprobs):
         """

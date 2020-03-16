@@ -1,21 +1,22 @@
 import sys
-sys.path.append('')
+import os
 import time
-import torch.nn as nn
+import json
+
+import torch
 import torch.nn.functional as F
 from scipy.optimize import minimize
+import cv2
+import numpy as np
 
-from core.utils_.utils import *
-from operators import img2tensor, tensor2img
-from core.models.self_discriminator.discriminator import Discriminator
-from core.models_.disc_resnet import ResNet_wobn
-from core.models.lang_encoder import RNNEncoder as Lang_encoder
-import core.utils_.utils as utils
-from core.models.actor import Actor
-from core.models.seq2seqGAN.seq2seqGANDisc import Pix2PixHDModel
-from core.options.seq2seqGAN_train_options import TrainOptions
-from core.datasets_.FiveKdataset import FiveK
-from core.executors.request_executor import Executor
+from utils.visual_utils import img2tensor, tensor2img
+from models.lang_encoder import RNNEncoder as Lang_encoder
+from utils.text_utils import load_embedding
+from models.actor import Actor
+from models.seq2seqGAN.seq2seqGANDisc import Pix2PixHDModel
+from options.seq2seqGAN_train_options import TrainOptions
+from datasets.FiveKdataset import FiveK
+from executors.executor import Executor
 
 
 # beam search editing
@@ -27,7 +28,7 @@ def create_seq2seq_net(input_vocab_size, hidden_size,
                        dropout_p, word2vec_path=None, fix_embedding=False, pad_id=0):
     word2vec = None
     if word2vec_path is not None:
-        word2vec = utils.load_embedding(word2vec_path)
+        word2vec = load_embedding(word2vec_path)
 
     n_spec_token = 4
     encoder = Lang_encoder(input_vocab_size, word_vec_dim, hidden_size, n_spec_token,
@@ -63,32 +64,6 @@ def load_seq2seqgan_disc(opt):
     model.cuda()
     return model
 
-# def get_param_naive(img, out, txt, mask, param0, executor, op_ind, dist_type):
-#     """ standard way to estimate the parameter from img to out
-#     :param img: image before operation [tensor] (1, 3, h, w)
-#     :param out: image before operation [tensor] (1, 3, h, w)
-#     :param txt: text request
-#     :param mask: mask [tensor] (1, 3, h, w]
-#     :param param: initial parameter that out -> img
-#     :param opname: operator name that out -> img
-#     :param cfg:
-#     :return: param: predicted best parameter
-#     :return success_flag: boolean indicating whether it is successful
-#     """
-#     def func(param):
-#         param = torch.tensor([param], dtype=torch.float).to(img.device)
-#         pred_out, pred_param = executor.execute(img, op_ind, None, specified_param=param, has_noise=False)
-#         # calc dist
-#         if dist_type == 'self-disc':
-#             err = get_disc_dist(img, pred_out, txt, discriminator).item()
-#         else:
-#             err = get_dist(pred_out, out, dist_type).item()
-#         return err
-#
-#     res = minimize(func, param0, method='Nelder-Mead')
-#     param = list(res.x)
-#     success_flag = res.success
-#     return torch.tensor([param]).to(img.device), success_flag
 
 def get_param_naive(img, out, txt, mask, param0, executor, discriminator, op_ind, dist_type, optimizer):
     """ standard way to estimate the parameter from img to out
@@ -171,18 +146,6 @@ def get_param_gd(img, out, txt, mask, param0, executor, discriminator, op_ind, d
         return err
     param, success_flag = gd_minimize(func, param0, method=optimizer)
     return param, success_flag
-
-
-# def get_param(I0, I1, txt, operation, executor, dist_type):
-#     param_num = executor.get_param_num(operation)
-#     if operation in [0, 1, 2, 6]:
-#         param0 = torch.zeros(param_num)
-#     elif operation in [3, 5]:
-#         param0 = torch.ones(param_num)
-#     else:
-#         assert False, 'the operation is not global operation'
-#     param, sucess_flag = get_param_naive(I0, I1, txt, None, param0, executor, operation, dist_type)
-#     return param, sucess_flag
 
 
 def get_param(I0, I1, txt, operation, executor, discriminator, dist_type, optimizer):
@@ -327,8 +290,8 @@ if __name__ == '__main__':
     # err = 1e-2
     err = -10
     # dist_type = 'self-disc'
-    # dist_type = 'L1'
-    dist_type = 'seq2seqGAN-disc'
+    dist_type = 'L1'
+    # dist_type = 'seq2seqGAN-disc'
     # optimizer = 'Nelder-Mead'
     # optimizer = 'adam'
     optimizer = 'lbfgs'
