@@ -66,7 +66,7 @@ PYTHONPATH='.' CUDA_VISIBLE_DEVICES=0 python preprocess/gen_greedy_seqs_GIER.py
 ### FiveK Train
 
 ```shell
-CUDA_VISIBLE_DEVICES=0 python experiments/t2onet/train_seq2seqL1.py --batch_size 64 --print_every 50 --checkpoint_every 1000 --num_iter 10000 --trial 2
+PYTHONPATH='.' CUDA_VISIBLE_DEVICES=0 python experiments/t2onet/train_seq2seqL1.py --batch_size 64 --print_every 50 --checkpoint_every 1000 --num_iter 10000 --trial 2
 ```
 
 ### FiveK Test
@@ -78,11 +78,11 @@ PYTHONPATH='.' CUDA_VISIBLE_DEVICES=0 python experiments/t2onet/test_seq2seqL1.p
 ### GIER Train
 
 ```shell
-CUDA_VISIBLE_DEVICES=0 python core/train_GIER_seq2seqL1.py  --dataset GIER --session 3 --batch_size 64 --data_mode global+shapeAlign --print_every 100 --checkpoint_every 1000 --num_iter 20000 --trial 1 
+PYTHONPATH='.' CUDA_VISIBLE_DEVICES=0 python experiments/t2onet/train_GIER_seq2seqL1.py  --dataset GIER --session 3 --batch_size 64 --data_mode global+shapeAlign --print_every 100 --checkpoint_every 1000 --num_iter 20000 --trial 1 
 ```
 
 ### GIER Test
 
 ```shell
-CUDA_VISIBLE_DEVICES=0 python core/test_GIER_seq2seqL1.py  --dataset GIER --session 3 --data_mode global+shapeAlign --print_every 20 --visualize_every 5 --visualize 1 --trial 6
+PYTHONPATH='.' CUDA_VISIBLE_DEVICES=0 python experiments/t2onet/test_GIER_seq2seqL1.py  --dataset GIER --session 3 --data_mode global+shapeAlign --print_every 20 --visualize_every 5 --visualize 0 --trial 7
 ```

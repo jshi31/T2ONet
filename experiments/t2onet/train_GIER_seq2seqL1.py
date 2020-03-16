@@ -10,12 +10,12 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
-import myhtml
-from core.options.seq2seqGAN_train_options import TrainOptions
-from core.datasets_.GIERdataset import GIERDataset as GIER
-from core.datasets_.GIERdataset import GIERDatasetAct as GIERAct
-from core.models.actor import Actor
-from core.test_GIER_seq2seqL1 import test
+import utils.html as html
+from options.seq2seqGAN_train_options import TrainOptions
+from datasets.GIERdataset import GIERDataset as GIER
+from datasets.GIERdataset import GIERDatasetAct as GIERAct
+from models.actor import Actor
+from experiments.t2onet.test_GIER_seq2seqL1 import test
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -143,7 +143,7 @@ def train(model, train_loader, val_loader, optimizer_fs, crtNLL, crtMSE, opt):
 def set_web():
     web_dir = os.path.join(opt.run_dir, 'val', 'web')
     img_dir = os.path.join(web_dir, 'images')
-    webpage = myhtml.HTML(web_dir, 'val result', reflesh=1)
+    webpage = html.HTML(web_dir, 'val result', reflesh=1)
     webpage.add_header('Visualization of train result for trial {}'.format(opt.trial))
     return webpage, img_dir
 
