@@ -13,8 +13,9 @@ from utils.visual_utils import img2tensor, tensor2img
 from models.lang_encoder import RNNEncoder as Lang_encoder
 from utils.text_utils import load_embedding
 from models.actor import Actor
-from models.seq2seqGAN.seq2seqGANDisc import Pix2PixHDModel
 from options.seq2seqGAN_train_options import TrainOptions
+import datasets
+import datasets.FiveKdataset as FiveKDataset
 from datasets.FiveKdataset import FiveK
 from executors.executor import Executor
 
@@ -45,7 +46,6 @@ def load_self_disc(opt):
     # load model
     ckpt_dir = os.path.join(opt.run_dir, 'self_disc_model')
     model_dir = os.path.join(ckpt_dir, 'checkpoint_best')
-    # model_dir = os.path.join(ckpt_dir, 'checkpoint_iter00001000')
     model.load_state_dict(torch.load(os.path.join(model_dir, 'model.pth')), strict=False)
     print('loaded model from {}'.format(model_dir))
     return model
@@ -57,7 +57,6 @@ def load_seq2seqgan_disc(opt):
     model = Pix2PixHDModel(actor, opt)
     # load param
     ckpt_dir = os.path.join(opt.run_dir, 'seq2seqGAN_model')
-    # model_dir = os.path.join(ckpt_dir, 'checkpoint_iter00009000')
     model_dir = os.path.join(ckpt_dir, 'checkpoint_best')
     model.load_state_dict(torch.load(os.path.join(model_dir, 'model.pth')), strict=False)
     print('loaded model from {}'.format(model_dir))

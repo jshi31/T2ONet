@@ -42,7 +42,7 @@ PYTHONPATH='.' python datasets/FiveKdataset.py
 ## Plan Action Sequences
 
 ```shell
-CUDA_VISIBLE_DEVICES=0 python preprocess/gen_greedy_seqs_FiveK.py
+PYTHONPATH='.' CUDA_VISIBLE_DEVICES=0 python preprocess/gen_greedy_seqs_FiveK.py
 ```
 
 

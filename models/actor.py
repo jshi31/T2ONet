@@ -9,7 +9,7 @@ import torch.nn.functional as F
 from .actor_resnet import ResNet as Vis_encoder
 from .lang_encoder import RNNEncoder as Lang_encoder
 from .action_decoder import Decoder
-from ..executors.executor import Executor
+from executors.executor import Executor
 from utils.text_utils import load_embedding, load_vocab
 
 
