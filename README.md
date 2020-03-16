@@ -3,8 +3,6 @@
 ## Instroduction
 This is the Pytorch implementation for paper "Learning by Planning: Language-Guided Global Image Editing".
 
-
-
 ## Dependency
 
 - Pytorch >= 1.0.0
@@ -16,6 +14,18 @@ This is the Pytorch implementation for paper "Learning by Planning: Language-Gui
 - tabulate
 - dominate
 - kornia
+
+## Dataset
+
+### MIT-Adobe Five
+
+Test the dataloader by running
+
+```shell
+PYTHONPATH='.' python datasets/FiveKdataset.py
+```
+
+
 
 
 ## FiveKReq

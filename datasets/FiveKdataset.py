@@ -1,11 +1,10 @@
 import os
 import json
 import pdb
-
+import sys
 import numpy as np
-import cv2
 import torch
-from core.utils.visual_utils import load_train_img, load_infer_img, load_infer_img_short_size_bounded
+from utils.visual_utils import load_train_img, load_infer_img, load_infer_img_short_size_bounded
 from torch.utils.data import Dataset, DataLoader
 
 
@@ -20,8 +19,6 @@ def load_vocab(vocab_dir, session):
     op_vocab2id = {token: i for i, token in enumerate(op_vocab)}
     id2op_vocab = {i: token for i, token in enumerate(op_vocab)}
     return vocab2id, id2vocab, op_vocab2id, id2op_vocab
-
-
 
 
 class FiveK(Dataset):
@@ -49,8 +46,8 @@ class FiveK(Dataset):
         req = dic['request']
         input_path = os.path.join(self.img_dir, dic['input'])
         output_path = os.path.join(self.img_dir, dic['output'])
-        input_img = load_train_img(input_path, self.train_img_size) if self.phase == 'train' else load_infer_img(input_path)
-        output_img = load_train_img(output_path, self.train_img_size) if self.phase == 'train' else load_infer_img(output_path)
+        input_img = load_train_img(input_path, self.train_img_size) if self.phase == 'train' else load_infer_img_short_size_bounded(input_path, 600)
+        output_img = load_train_img(output_path, self.train_img_size) if self.phase == 'train' else load_infer_img_short_size_bounded(output_path, 600)
         return input_img, output_img, req_idx, req
 
 
@@ -131,8 +128,8 @@ class FiveKAct(Dataset):
         req = dic['request']
         input_path = os.path.join(self.img_dir, dic['input'])
         output_path = os.path.join(self.img_dir, dic['output'])
-        input_img = load_train_img(input_path, self.train_img_size) if self.phase == 'train' else load_infer_img(input_path)
-        output_img = load_train_img(output_path, self.train_img_size) if self.phase == 'train' else load_infer_img(output_path)
+        input_img = load_train_img(input_path, self.train_img_size) if self.phase == 'train' else load_infer_img_short_size_bounded(input_path, 600)
+        output_img = load_train_img(output_path, self.train_img_size) if self.phase == 'train' else load_infer_img_short_size_bounded(output_path, 600)
         ops, params, imgs = self.get_act(item)
         output_imgs = torch.cat([imgs, output_img.unsqueeze(0)])  # the last img is gt
         return input_img, output_imgs, req_idx, ops, params, req
@@ -289,8 +286,5 @@ if __name__ == '__main__':
 
     for i, data in enumerate(loader):
         print('{}/{}'.format(i, len(loader)))
-        try:
-            input, outputs, req_idx, ops, params, req = data
-        except:
-            pdb.set_trace()
+        input, outputs, req_idx, ops, params, req = data
 
