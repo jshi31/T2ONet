@@ -53,6 +53,10 @@ class BaseOptions():
         self.parser.add_argument('--color_curve_range', type=tuple, default=(0.90, 1.10), help='color curve range')
         self.parser.add_argument('--saturation_range', type=tuple, default=(-0.2, 0.8), help='saturation range')
 
+        # demo
+        self.parser.add_argument('--img', type=str, default='', help='input image path')
+        self.parser.add_argument('--request', type=str, default='increase the brightness', help='the input language')
+        self.parser.add_argument('--multi_img', type=int, default=1, help='whether use indicate multi image')
 
     def parse(self):
         # Instantiate option
